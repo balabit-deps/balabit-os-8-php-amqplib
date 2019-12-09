@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+mkdir --parents vendor
+phpab \
+  --output vendor/autoload.php \
+  --template debian/autoload.tests.php.tpl \
+  tests
+phpunit

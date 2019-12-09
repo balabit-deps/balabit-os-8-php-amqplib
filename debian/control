@@ -1,0 +1,25 @@
+Source: php-amqplib
+Section: php
+Priority: optional
+Maintainer: Debian PHP PEAR Maintainers <pkg-php-pear@lists.alioth.debian.org>
+Uploaders: David Prévot <taffit@debian.org>
+Build-Depends: debhelper-compat (= 12),
+               php-httpful,
+               php-phpseclib,
+               phpab,
+               phpunit,
+               pkg-php-tools,
+               rabbitmq-server
+Standards-Version: 4.4.1
+Vcs-Git: https://salsa.debian.org/php-team/pear/php-amqplib.git
+Vcs-Browser: https://salsa.debian.org/php-team/pear/php-amqplib
+Homepage: https://github.com/php-amqplib/php-amqplib
+
+Package: php-amqplib
+Architecture: all
+Depends: ${misc:Depends}, ${phpcomposer:Debian-require}
+Suggests: ${phpcomposer:Debian-suggest}
+Breaks: ${phpcomposer:Debian-conflict}
+Provides: ${phpcomposer:Debian-provide}
+Description: pure PHP implementation of the AMQP protocol
+ ${phpcomposer:description}.

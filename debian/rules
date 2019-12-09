@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+%:
+	dh $@ --with phpcomposer
+
+override_dh_auto_build:
+	phpab \
+		--output PhpAmqpLib/autoload.php \
+		--template debian/autoload.php.tpl \
+		PhpAmqpLib
+	mkdir --parents vendor
+	phpab \
+		--output vendor/autoload.php \
+		--template debian/autoload.tests.php.tpl \
+		tests
+
+override_dh_auto_test:
+ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+	TEST_RABBIT_SERVER_DIR=$$(mktemp -d --tmpdir rabbitmq.XXXXXX) ; \
+	mkdir -p $$TEST_RABBIT_SERVER_DIR/log ; \
+	export RABBITMQ_NODENAME=test ; \
+	env RABBITMQ_MNESIA_BASE=$$TEST_RABBIT_SERVER_DIR/mnesia \
+	  RABBITMQ_LOG_BASE=$$TEST_RABBIT_SERVER_DIR/log \
+	  RABBITMQ_NODE_IP_ADDRESS=127.0.0.1 \
+	  HOME=$$TEST_RABBIT_SERVER_DIR \
+	  /usr/lib/rabbitmq/bin/rabbitmq-server > $$TEST_RABBIT_SERVER_DIR/log/output.txt 2>&1 & \
+	TEST_RABBIT_SERVER_PID=$$! ; \
+	HOME=$$TEST_RABBIT_SERVER_DIR /usr/lib/rabbitmq/bin/rabbitmqctl wait \
+	  -q $$TEST_RABBIT_SERVER_DIR/mnesia/test.pid ; \
+	phpunit ; \
+	env RABBITMQ_MNESIA_BASE=$$TEST_RABBIT_SERVER_DIR/mnesia \
+	  RABBITMQ_LOG_BASE=$$TEST_RABBIT_SERVER_DIR/log \
+	  RABBITMQ_NODE_IP_ADDRESS=127.0.0.1 \
+	  HOME=$$TEST_RABBIT_SERVER_DIR \
+	  /usr/lib/rabbitmq/bin/rabbitmqctl stop > $$TEST_RABBIT_SERVER_DIR/log/stop_output.txt 2>&1 &
+
+else
+	@echo "** tests disabled"
+endif
